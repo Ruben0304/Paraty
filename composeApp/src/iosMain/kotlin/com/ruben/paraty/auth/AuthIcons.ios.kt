@@ -147,3 +147,27 @@ actual fun VisibilityOffIcon(
         tint = tint
     )
 }
+
+@Composable
+actual fun ImageIcon(
+    modifier: Modifier,
+    tint: Color
+) {
+    SFSymbol(
+        symbolName = "photo",
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+actual fun AddIcon(
+    modifier: Modifier,
+    tint: Color
+) {
+    SFSymbol(
+        symbolName = "plus.circle.fill",
+        modifier = modifier,
+        tint = tint
+    )
+}

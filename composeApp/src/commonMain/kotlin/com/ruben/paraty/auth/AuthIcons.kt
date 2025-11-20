@@ -62,3 +62,15 @@ expect fun VisibilityOffIcon(
     modifier: Modifier = Modifier,
     tint: Color = Color.Unspecified
 )
+
+@Composable
+expect fun ImageIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = Color.Unspecified
+)
+
+@Composable
+expect fun AddIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = Color.Unspecified
+)

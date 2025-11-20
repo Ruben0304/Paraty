@@ -123,3 +123,29 @@ actual fun VisibilityOffIcon(
         tint = tint
     )
 }
+
+@Composable
+actual fun ImageIcon(
+    modifier: Modifier,
+    tint: Color
+) {
+    Icon(
+        imageVector = Icons.Default.Image,
+        contentDescription = null,
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+actual fun AddIcon(
+    modifier: Modifier,
+    tint: Color
+) {
+    Icon(
+        imageVector = Icons.Default.Add,
+        contentDescription = null,
+        modifier = modifier,
+        tint = tint
+    )
+}

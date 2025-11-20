@@ -6,11 +6,13 @@ import ComposeApp
 struct LoginView: UIViewControllerRepresentable {
     let onNavigateToRegister: () -> Void
     let onLoginSuccess: () -> Void
+    let onSkip: (UserType) -> Void
 
     func makeUIViewController(context: Context) -> UIViewController {
         MainViewControllerKt.LoginViewController(
             onNavigateToRegister: onNavigateToRegister,
-            onLoginSuccess: onLoginSuccess
+            onLoginSuccess: onLoginSuccess,
+            onSkip: onSkip
         )
     }
 
@@ -50,6 +52,14 @@ struct SearchView: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
 }
 
+struct AddEventView: UIViewControllerRepresentable {
+    func makeUIViewController(context: Context) -> UIViewController {
+        MainViewControllerKt.AddEventViewController()
+    }
+
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
+}
+
 struct SettingsView: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> UIViewController {
         MainViewControllerKt.SettingsViewController()
@@ -69,16 +79,47 @@ class HomeViewModelWrapper: ObservableObject {
     }
 }
 
+// MARK: - Auth View Model Wrapper
+class AuthViewModelWrapper: ObservableObject {
+    let viewModel = AuthViewModel()
+    @Published var isAuthenticated: Bool = false
+    @Published var userType: UserType? = nil
+
+    init() {
+        // Observe changes from Kotlin Flow
+        // This is simplified - in production you'd use proper Flow observation
+    }
+
+    func login(type: UserType) {
+        viewModel.login(userType: type)
+        isAuthenticated = true
+        userType = type
+    }
+
+    func skip(type: UserType) {
+        viewModel.skip(userType: type)
+        isAuthenticated = true
+        userType = type
+    }
+
+    func register(type: UserType) {
+        viewModel.register(userType: type)
+        isAuthenticated = true
+        userType = type
+    }
+}
+
 // MARK: - Main Content View
 struct ContentView: View {
-    @State private var isAuthenticated = false
     @State private var showingRegister = false
+    @StateObject var authWrapper = AuthViewModelWrapper()
     @StateObject var homeWrapper = HomeViewModelWrapper()
 
     var body: some View {
-        if isAuthenticated {
+        if authWrapper.isAuthenticated {
             // Show main app with TabView
             TabView {
+                // Tab Inicio (siempre presente)
                 NavigationStack {
                     HomeView(viewModel: homeWrapper.viewModel)
                         .ignoresSafeArea(edges: .all)
@@ -98,13 +139,26 @@ struct ContentView: View {
                     Label("Inicio", systemImage: "house")
                 }
 
-                NavigationStack {
-                    SearchView()
-                }
-                .tabItem {
-                    Label("Buscar", systemImage: "magnifyingglass")
+                // Tab del medio - cambia según tipo de usuario
+                if authWrapper.userType == UserType.business {
+                    // Para negocios: pantalla de agregar evento
+                    NavigationStack {
+                        AddEventView()
+                    }
+                    .tabItem {
+                        Label("Agregar", systemImage: "plus.circle.fill")
+                    }
+                } else {
+                    // Para clientes: pantalla de buscar
+                    NavigationStack {
+                        SearchView()
+                    }
+                    .tabItem {
+                        Label("Buscar", systemImage: "magnifyingglass")
+                    }
                 }
 
+                // Tab Ajustes (siempre presente)
                 NavigationStack {
                     SettingsView()
                 }
@@ -120,7 +174,7 @@ struct ContentView: View {
                         showingRegister = false
                     },
                     onRegisterSuccess: {
-                        isAuthenticated = true
+                        authWrapper.register(type: UserType.client)
                     }
                 )
                 .ignoresSafeArea()
@@ -130,7 +184,10 @@ struct ContentView: View {
                         showingRegister = true
                     },
                     onLoginSuccess: {
-                        isAuthenticated = true
+                        authWrapper.login(type: UserType.client)
+                    },
+                    onSkip: { userType in
+                        authWrapper.skip(type: userType)
                     }
                 )
                 .ignoresSafeArea()
